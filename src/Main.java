@@ -10,4 +10,8 @@ public class Main {
 			}
 		}
 	}
+	
+	public static void piropiro() {
+		System.out.println("piropiro");
+	}
 }
