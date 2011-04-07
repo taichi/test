@@ -5,6 +5,9 @@ public class Main {
 		System.out.println("master branch");
 		if(System.getProperty("hoge") == null) {
 			System.out.println("fuga branch");
+			while(System.getProperty("piro") == null) {
+				System.out.println("piro branch conflict resolution is automatic");
+			}
 		}
 	}
 }
