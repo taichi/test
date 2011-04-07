@@ -11,4 +11,7 @@ public class Main {
 		}
 		System.out.println("add message");
 	}
+	public static void hogehoge() {
+		System.out.println("HOGE !! HOGE!!");
+	}
 }
