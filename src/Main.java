@@ -1,4 +1,8 @@
 public class Main {
+	
+	static {
+		System.out.println("forbbidn branch");
+	}
 
 	public static void main(String[] args) {
 		System.out.println("Hello Egit");
