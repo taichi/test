@@ -9,5 +9,6 @@ public class Main {
 				System.out.println("piro branch conflict resolution is automatic");
 			}
 		}
+		System.out.println("add message");
 	}
 }
