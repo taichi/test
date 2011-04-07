@@ -12,7 +12,7 @@ public class Main {
 		System.out.println("add message");
 	}
 	
-	public static void piropiro() {
+	public static void piropiro(String value) {
 		System.out.println("piropiro");
 	}
 }
