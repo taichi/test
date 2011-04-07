@@ -24,4 +24,8 @@ public class Main {
 	public static void piropiro(String value) {
 		System.out.println("piropiro");
 	}
+	
+	public void patch(int value) {
+		
+	}
 }
