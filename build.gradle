@@ -1,0 +1,84 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+import org.eclipse.egit.github.core.*
+import org.eclipse.egit.github.core.client.*
+import org.eclipse.egit.github.core.service.*
+import org.eclipse.jgit.api.*
+import org.eclipse.jgit.transport.*
+import org.eclipse.jgit.errors.*
+import org.eclipse.jgit.lib.*
+
+version = '0.0.1'
+
+repositories { mavenCentral() }
+
+sourceSets.main.java.srcDir 'src'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+tasks.withType(AbstractCompile).each {
+	it.options.encoding = "UTF-8"
+}
+
+buildscript {
+	repositories {
+		mavenCentral()
+		mavenRepo(url: 'http://download.eclipse.org/jgit/maven')
+	}
+	dependencies {
+		classpath 'org.eclipse.jgit:org.eclipse.jgit:1.+'
+		classpath 'org.eclipse.mylyn.github:org.eclipse.egit.github.core:1.+'
+	}
+}
+jar.classifier = new Date().format 'yyyyMMdd_HHmmss'
+
+artifacts { archives jar }
+
+class PassphraseProvider extends CredentialsProvider {
+	def passphrase = ""
+	PassphraseProvider(pass) {
+		this.passphrase = "$pass"
+	}
+	def boolean isInteractive() {
+		false
+	}
+	def boolean supports(CredentialItem... items) {
+		true
+	}
+	def boolean get(URIish uri, CredentialItem... items) {
+		items.each {
+			if(it instanceof CredentialItem.StringType) {
+				it.value = passphrase
+				return true
+			} else {
+				throw new UnsupportedCredentialItem(uri, it.promptText);
+			}
+		}
+	}
+}
+
+task tag << {
+	def g = null
+	try {
+		g = Git.open file('.git')
+		g.tag() setName "$version-$jar.classifier" setMessage "release $version" call()
+		def pp = System.console().readPassword("\nenter ssh passphrase: ")
+		def cred = new PassphraseProvider(pp)
+		g.push().setPushTags().setCredentialsProvider cred setProgressMonitor new TextProgressMonitor() call()
+	} finally {
+		g.repository.close()
+	}
+}
+
+task github(dependsOn: [jar, tag]) << {
+	def client = new GitHubClient()
+	client.setCredentials(github_username, github_password)
+	def repoid = RepositoryId.create('taichi', 'test')
+	def dls = new DownloadService(client)
+	def d = new Download()
+	d.name = jar.archiveName
+	def dr = dls.createDownload(repoid, d, jar.archivePath)
+	println dr
+}
