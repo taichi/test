@@ -38,7 +38,8 @@ artifacts { archives jar }
 
 class PassphraseProvider extends CredentialsProvider {
 	def passphrase = ""
-	PassphraseProvider(pass) {
+	PassphraseProvider() {
+		def pass = System.console().readPassword("\nenter ssh passphrase: ")
 		this.passphrase = "$pass"
 	}
 	def boolean isInteractive() {
@@ -60,19 +61,21 @@ class PassphraseProvider extends CredentialsProvider {
 }
 
 task tag << {
-	def g = null
+	def g = Git.open file('.git')
+	def tag = null
 	try {
-		g = Git.open file('.git')
-		g.tag() setName "$version-$jar.classifier" setMessage "release $version" call()
-		def pp = System.console().readPassword("\nenter ssh passphrase: ")
-		def cred = new PassphraseProvider(pp)
-		g.push().setPushTags().setCredentialsProvider cred setProgressMonitor new TextProgressMonitor() call()
+		def msg = "$version-$jar.classifier"
+		tag = g.tag() setName msg setMessage "release $msg" call()
+		g.push().setPushTags().setCredentialsProvider new PassphraseProvider() setProgressMonitor new TextProgressMonitor() call()
+	} catch(e) {
+		g.tagDelete().setTags(tag?.tagName).call()
+		throw e
 	} finally {
 		g.repository.close()
 	}
 }
 
-task github(dependsOn: [jar, tag]) << {
+task uploadArchives(overwrite: true) << {
 	def client = new GitHubClient()
 	client.setCredentials(github_username, github_password)
 	def repoid = RepositoryId.create('taichi', 'test')
@@ -82,3 +85,5 @@ task github(dependsOn: [jar, tag]) << {
 	def dr = dls.createDownload(repoid, d, jar.archivePath)
 	println dr
 }
+
+task release(dependsOn:[build, tag, uploadArchives]) << { println "release fishined !!" }
