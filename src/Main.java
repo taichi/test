@@ -1,7 +1,8 @@
 public class Main {
-	
+
 	static {
 		System.out.println("forbbidn branch");
+		System.out.println("mofmof");
 	}
 
 	public static void main(String[] args) {
@@ -24,8 +25,8 @@ public class Main {
 	public static void piropiro(String value) {
 		System.out.println("piropiro");
 	}
-	
+
 	public void patch(int value) {
-		
+
 	}
 }
